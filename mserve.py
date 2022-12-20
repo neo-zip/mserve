@@ -125,7 +125,7 @@ def start(path:str = '.'):
     setInfo('Memory',str(storageItems['ram'])+'gb')
     if storageItems['autobackup']:backupWorlds(path)
 
-    if storageItems['autorestart']:
+    if 'autorestart' in storageItems or storageItems['autorestart']:
         while True:
             os.system(f'cd {path} & java -Xms{storageItems["ram"]}G -Xmx{storageItems["ram"]}G -jar {storageItems["file"]} --nogui')
             mount.print('[white]//////////////////////////////\ncut off thread[red bold]\n\nEXITED SERVER[/]\n\n[green]autorestarting in 5... (CTRL-C to cancel)[/]')
