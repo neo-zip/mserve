@@ -143,7 +143,9 @@ def start(path:str = '.'):
 
 # TODO add loading backups, clearing backups
 @app.command(short_help='backup a server\'s worlds (dirs including level.dat)')
-def backup(path:str):
+def backup(path:str = '.'):
+    if not os.path.exists(path):
+        raise Exception('path not found')
     backupWorlds(path)
 
 
