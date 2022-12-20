@@ -1,9 +1,10 @@
 #
 # https://neotap.net
-# MIT licence: made with <3 from neo
+# made with <3 from neo
 #
 
 
+import time
 import typer
 import webbrowser
 from util import *
@@ -22,7 +23,7 @@ def docs(open:bool = False):
     mount.print('\t[gray]use [cyan]--open[/] to open the link immediately')
 
 
-
+# TODO add starterplugins and copy better default config files
 @app.command(short_help='creates a new server')
 def init(
     path:str = CD_CURRENT,
@@ -30,12 +31,10 @@ def init(
     provider:str = 'paper',
     ram:int = 2,
     autobackup:bool = True,
-    autorestart:bool = True
+    autorestart:bool = True,
+    # starterplugins:bool = True
     ):
 
-    if not os.path.exists(path):
-        os.makedirs(path)
-    setInfo('Success',f'Found path at [green]{path}[/]','✔')
 
     storageItems = {}
     providers = {
@@ -47,6 +46,15 @@ def init(
         'velocity': 'proxies, a lightweight, advanced proxy.'
     }
     provider_type = 'servers'
+
+
+    # path
+    if not os.path.exists(path):
+        os.makedirs(path)
+    setInfo('Success',f'Found path at [green]{path}[/]','✔')
+
+
+    # provider & version
     if provider not in providers:
         mount.print('\n[red bold]ERROR ➜ [/] Type needs one of:\n')
         for i in providers:
@@ -60,7 +68,10 @@ def init(
             path,
             f'{provider.lower()}{version}.jar'
             )
+        storageItems.update({'file': f'{provider.lower()}{version}.jar'})
     
+
+    # ram
     if ram <= 0:
         setInfo('Error','[red]Please enter a ram amount greater than 1gb, set to 2gb.[/]','[red]✖[/]')
         storageItems.update({'ram': 2})
@@ -71,81 +82,77 @@ def init(
         storageItems.update({'ram': ram})
         setInfo('Success',f'Set ram dedication to [green]{ram}gb[/]','✔')
 
+
+    # autobackup
     if autobackup:
         storageItems.update({'autobackup': True})
         setInfo('Success','Auto backup turned [green]on[/]','✔')
     
+
+    # autorestart
     if autorestart:
         storageItems.update({'autorestart': True})
         setInfo('Success','Auto restart turned [green]on[/]','✔')
+
+
+    # TODO starterplugins - runs download script, from the matching path of server (/assets/.../plugins.py)
+    # if starterplugins:
+    #     if os.path.exists(path):
+    #         pass
+    #     storageItems.update({'starterplugins': True})
+    #     setInfo('Success','Starter plugins [green]added[/]','✔')
 
     storageAdd(path,storageItems)
     mount.print('\n[green bold]Initilization completed.[/]\nA failed download is most likely a faulty version.')
 
 
-@app.command(short_help='starts a server or lists them, "all" selector works')
-def start(server:str):
-    if server == 'all':
-        mount.print('STARTING ALL SERVERS')
+
+@app.command(short_help='starts a server or lists them')
+def start(path:str = '.'):
+    if not os.path.exists(path):
+        raise Exception('path not found')
+    if not os.path.exists(path + '/mserve.json'):
+        raise Exception('mserve options not found (mserve.json)')
+
+    storageItems = storageGet(path)
+
+    if not os.path.isfile(path + '/' + storageItems["file"]):
+        raise Exception('jarfile not found')
+    
+    mount.print('\n[green bold]STARTING SERVER[/]')
+    setInfo('Path',path)
+    setInfo('File',storageItems['file'])
+    setInfo('Memory',str(storageItems['ram'])+'gb')
+    if storageItems['autobackup']:backupWorlds(path)
+
+    if storageItems['autorestart']:
+        while True:
+            os.system(f'cd {path} & java -Xms{storageItems["ram"]}G -Xmx{storageItems["ram"]}G -jar {storageItems["file"]} --nogui')
+            mount.print('[white]//////////////////////////////\ncut off thread[red bold]\n\nEXITED SERVER[/]\n\n[green]autorestarting in 5... (CTRL-C to cancel)[/]')
+
+            if storageItems['autobackup']:backupWorlds(path)
+            
+            time.sleep(5)
     else:
-        mount.print(f'just starting {server}')
+        os.system(f'cd {path} & java -Xms{storageItems["ram"]}G -Xmx{storageItems["ram"]}G -jar {storageItems["file"]} --nogui')
+        mount.print('[white]//////////////////////////////\ncut off thread[red bold]\n\nEXITED SERVER[/]')
+
+        if storageItems['autobackup']:backupWorlds(path)
 
 
 
-@app.command(short_help='backs up a server\'s worlds (world_*), "all" selector works')
-def backup(server:str):
-    typer.echo(f'adding DFSADSFASD to {server}')
-    print(CD_FILE)
-    os.system('java -Xms1G -Xmx1G -jar spigot-1.18.2.jar --nogui')
+# TODO add loading backups, clearing backups
+@app.command(short_help='backup a server\'s worlds (dirs including level.dat)')
+def backup(path:str):
+    backupWorlds(path)
 
 
-
+# TODO add mysql startup & kill all java instances
 @app.command(short_help='other utilities')
 def util():
-    storageAdd(CD_CURRENT,{'test':'okay'})
-    storageGet(CD_CURRENT,'test')
-
-
+    pass
 
 
 
 if __name__ == '__main__':
     app()
-
-
-
-# init_data = [{}]
-
-# mount.print('[magenta bold]INITILIZATION[/]\n[data]options to setup a new sever\nand dont worry, you can change most options later. \n[bold green]Press enter to skip (sets default)[/]')
-
-# init_data.append(getInfo('Path (skip to set current dir/...)'))
-# if init_data[0] == '':
-#     init_data[0] = cd_current
-# elif not os.path.exists(init_data[0]):
-#     os.makedirs(init_data[0])
-
-
-# init_data.append(getInfo('Type (Normal/Proxy)'))
-# if init_data[1].lower() != 'proxy':
-#     getInfo('Provider (Paper/Sigot/Vanilla)')
-#     if init_data[1].lower() != 'vanilla' or init_data[1].lower() != 'spigot':
-#         init_data[1] = 'paper'
-# else:
-#     getInfo('Provider (Velocity/Bungee/Waterfall)')
-#     if init_data[1].lower() != 'bungee' or init_data[1].lower() != 'waterfall':
-#         init_data[1] = 'velocity'
-
-# init_data.append(getInfo('Version (x.xx.x)'))
-
-
-# init_data.append(getInfo('Auto restart on crash (Y/N)'))
-# if init_data[3].lower() != 'n':
-#     init_data[3] = True
-# else:
-#     init_data[3] = False
-
-# print(init_data)
-
-
-
-# mount.print('[error]Unkown Command. try \'mserve help\' for help.[/]')

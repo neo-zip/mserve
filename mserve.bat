@@ -1,6 +1,6 @@
 :: 
-:: https://neotap.dev
-:: please do not edit. might break the app.
+:: https://neotap.net
+:: please do not edit
 ::
 
 @echo off

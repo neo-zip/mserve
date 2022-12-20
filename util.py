@@ -1,8 +1,9 @@
 
 from rich.console import Console
 import os
+from time import gmtime, strftime
 import json
-import shutil
+from distutils.dir_util import copy_tree
 import requests
 
 
@@ -26,29 +27,46 @@ def getInfo(text: str):
 
 
 def download(url:str, path:str, name:str):
-    # if not os.path.exists(path):
-    #     os.makedirs(path)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-    # file_path = os.path.join(path, name)
-    # r = requests.get(url, stream=True)
+    file_path = os.path.join(path, name)
+    r = requests.get(url, stream=True)
 
-    # if r.ok:
-        # with open(file_path, 'wb') as f:
-        #     for chunk in r.iter_content(chunk_size=1024 * 8):
-        #         if chunk:
-        #             f.write(chunk)
-        #             f.flush()
-        #             os.fsync(f.fileno())
-    if True:
+    if r.ok:
+        with open(file_path, 'wb') as f:
+            for chunk in r.iter_content(chunk_size=1024 * 8):
+                if chunk:
+                    f.write(chunk)
+                    f.flush()
+                    os.fsync(f.fileno())
         setInfo('Success',f'downloaded as [green]{name}[/]','✔')
-    else:  
+    else:
         setInfo('Failed',f'[red]download status code {r.status_code}[/]','[red]✖[/]')
 
-def copy(source:str, location:str):
-    if not os.path.exists(location):
-        os.makedirs(location)
 
-    shutil.copy(source, location)
+
+def backupWorlds(path:str):
+    if not os.path.exists(path):
+        raise Exception('path not found')
+    if not os.path.exists(path + '/.backups'):
+        os.makedirs(path + '/.backups')
+
+    bakName = strftime("%Y-%m-%d@%H.%M.%S", gmtime())
+
+    for subdir, dirs, files in os.walk(path):
+        for file in files:
+            if file == 'level.dat':
+                try:
+                    copy_tree(
+                    subdir,
+                    path + '/.backups/' + bakName + '/' + os.path.basename(os.path.normpath(subdir))
+                    )
+                except:pass
+
+    setInfo('Backed',f'Backed all worlds up from [bold]{path}[/] as [bold]{bakName}[/]')
+
+
 
 def storageAdd(path:str,obj):
     if not os.path.exists(path):
@@ -59,13 +77,16 @@ def storageAdd(path:str,obj):
 
 def storageSet(path:str,key,value):
     if not os.path.exists(path):
-        raise Exception('Error: path not found')
+        raise Exception('path not found')
     else: 
         print(key,value)
 
-def storageGet(path:str,key:str): 
+def storageGet(path:str,key:str = ''): 
     if not os.path.exists(path):
-        raise Exception('Error: path not found')
+        raise Exception('path not found')
+    if key == '':
+        with open(path+'\mserve.json', 'r') as f:
+            return json.load(f)
     else: 
         with open(path+'\mserve.json', 'r') as f:
             return json.load(f)[key]
