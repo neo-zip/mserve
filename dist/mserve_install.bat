@@ -7,9 +7,9 @@ if /i "%p%" == "n" goto no
 :yes
 echo mkdir %APPDATA%\mserve
 echo set PATH=%PATH%;%APPDATA%\mserve
-powershell Invoke-WebRequest https://raw.githubusercontent.com/neo-zip/mserve/main/dist/mserve.bat -OutFile mserve.bat
-powershell Invoke-WebRequest https://github.com/neo-zip/mserve/raw/main/dist/mserve.exe -OutFile mserve.exe
-powershell Invoke-WebRequest https://neotap.net/assets/downloads/mserve_install.bat -OutFile mserve_install.bat
+powershell Invoke-WebRequest https://raw.githubusercontent.com/neo-zip/mserve/main/dist/mserve.bat -OutFile %APPDATA%\mserve\mserve.bat
+powershell Invoke-WebRequest https://github.com/neo-zip/mserve/raw/main/dist/mserve.exe -OutFile %APPDATA%\mserve\mserve.exe
+powershell Invoke-WebRequest https://raw.githubusercontent.com/neo-zip/mserve/main/dist/mserve_install.bat -OutFile %APPDATA%\mserve\mserve_install.bat
 color 0a
 echo.
 echo. Installation done! start by using 'mserve --help' in the terminal, thank you!
