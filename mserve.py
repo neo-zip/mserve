@@ -87,12 +87,18 @@ def init(
     if autobackup:
         storageItems.update({'autobackup': True})
         setInfo('Success','Auto backup turned [green]on[/]','✔')
+    else:
+        storageItems.update({'autobackup': False})
+        setInfo('Success','Auto backup turned [red]off[/]','✔')
     
 
     # autorestart
     if autorestart:
         storageItems.update({'autorestart': True})
         setInfo('Success','Auto restart turned [green]on[/]','✔')
+    else:
+        storageItems.update({'autobackup': False})
+        setInfo('Success','Auto backup turned [red]off[/]','✔')
 
 
     # TODO starterplugins - runs download script, from the matching path of server (/assets/.../plugins.py)
@@ -125,14 +131,15 @@ def start(path:str = '.'):
     setInfo('Memory',str(storageItems['ram'])+'gb')
     if storageItems['autobackup']:backupWorlds(path)
 
-    if 'autorestart' in storageItems or storageItems['autorestart']:
-        while True:
-            os.system(f'cd {path} & java -Xms{storageItems["ram"]}G -Xmx{storageItems["ram"]}G -jar {storageItems["file"]} --nogui')
-            mount.print('[white]//////////////////////////////\ncut off thread[red bold]\n\nEXITED SERVER[/]\n\n[green]autorestarting in 5... (CTRL-C to cancel)[/]')
+    if 'autorestart' in storageItems:
+        if storageItems['autorestart']:
+            while True:
+                os.system(f'cd {path} & java -Xms{storageItems["ram"]}G -Xmx{storageItems["ram"]}G -jar {storageItems["file"]} --nogui')
+                mount.print('[white]//////////////////////////////\ncut off thread[red bold]\n\nEXITED SERVER[/]\n\n[green]autorestarting in 5... (CTRL-C to cancel)[/]')
 
-            if storageItems['autobackup']:backupWorlds(path)
-            
-            time.sleep(5)
+                if storageItems['autobackup']:backupWorlds(path)
+                
+                time.sleep(5)
     else:
         os.system(f'cd {path} & java -Xms{storageItems["ram"]}G -Xmx{storageItems["ram"]}G -jar {storageItems["file"]} --nogui')
         mount.print('[white]//////////////////////////////\ncut off thread[red bold]\n\nEXITED SERVER[/]')
